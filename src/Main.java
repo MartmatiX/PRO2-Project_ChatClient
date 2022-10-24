@@ -7,7 +7,9 @@ public class Main {
 
     public static void main(String[] args) {
 
-        MainFrame window = new MainFrame(800, 600);
+        ChatClient client = new InMemoryChatClient();
+
+        MainFrame window = new MainFrame(800, 600, client);
 
     }
 
