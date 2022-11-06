@@ -1,11 +1,18 @@
 package models;
 
+import com.google.gson.annotations.Expose;
+
 import java.time.LocalDateTime;
 
 public class Message {
 
+    @Expose()
     private String author;
+
+    @Expose()
     private String text;
+
+    @Expose(serialize = false, deserialize = false)
     private LocalDateTime created;
 
     public static final int USER_LOGGED_IN = 1;

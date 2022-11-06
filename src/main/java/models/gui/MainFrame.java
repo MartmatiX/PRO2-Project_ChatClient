@@ -5,12 +5,16 @@ import models.chatClients.ChatClient;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class MainFrame extends JFrame {
     ChatClient chatClient;
 
     JTextField textInputName, textInputMessage;
     JTextArea textChat;
+
+    JPanel panelMain;
 
     public MainFrame(int width, int height, ChatClient chatClient) {
         super.setTitle("Chat Client");
@@ -21,10 +25,11 @@ public class MainFrame extends JFrame {
 
         initGui();
         setVisible(true);
+        closeWindow();
     }
 
     private void initGui() {
-        JPanel panelMain = new JPanel(new BorderLayout());
+        panelMain = new JPanel(new BorderLayout());
 
         panelMain.add(initLoginPanel(), BorderLayout.NORTH);
         panelMain.add(initLoggedUsersPanel(), BorderLayout.EAST);
@@ -145,6 +150,19 @@ public class MainFrame extends JFrame {
         for (Message mes : chatClient.getMessages()) {
             textChat.append(mes.toString() + "\n");
         }
+    }
+
+    private void closeWindow(){
+        panelMain.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE){
+                    System.out.println("exit");
+                    System.exit(0);
+                }
+            }
+        });
     }
 
 }
