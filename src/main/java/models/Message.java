@@ -12,7 +12,7 @@ public class Message {
     @Expose()
     private String text;
 
-    @Expose(serialize = false, deserialize = false)
+    @Expose()
     private LocalDateTime created;
 
     public static final int USER_LOGGED_IN = 1;
