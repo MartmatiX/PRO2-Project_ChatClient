@@ -19,8 +19,6 @@ public interface ChatClient {
 
     List<Message> getMessages();
 
-    void addActionListenerLoggedUsersChanged(ActionListener toAdd);
-
-    void addActionListenerMessageChanged(ActionListener toAdd);
+    void addActionListener(ActionListener listener);
 
 }

@@ -89,7 +89,10 @@ public class MainFrame extends JFrame {
         JScrollPane scrollPane = new JScrollPane(textChat);
         panelChat.add(scrollPane);
 
-        chatClient.addActionListenerMessageChanged(e -> refreshMessages());
+        chatClient.addActionListener(e -> {
+            if (e.getID() == 2)
+                refreshMessages();
+        });
 
         return panelChat;
     }
@@ -133,7 +136,10 @@ public class MainFrame extends JFrame {
         LoggedUsersTableModel loggedUsersTableModel = new LoggedUsersTableModel(chatClient);
         tblLoggedUsers.setModel(loggedUsersTableModel);
 
-        chatClient.addActionListenerLoggedUsersChanged(e -> loggedUsersTableModel.fireTableDataChanged());
+        chatClient.addActionListener(e -> {
+            if (e.getID() == 1)
+                loggedUsersTableModel.fireTableDataChanged();
+        });
 
         JScrollPane scrollpane = new JScrollPane(tblLoggedUsers);
         scrollpane.setPreferredSize(new Dimension(250, 500));
