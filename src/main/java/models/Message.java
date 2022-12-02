@@ -36,6 +36,12 @@ public class Message {
         }
     }
 
+    public Message(String author, String text, LocalDateTime created){
+        this.author = author;
+        this.text = text;
+        this.created = created;
+    }
+
     public String getAuthor() {
         return author;
     }
