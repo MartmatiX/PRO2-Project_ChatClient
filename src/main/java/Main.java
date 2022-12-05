@@ -29,7 +29,7 @@ public class Main {
         ChatClient chatClient = new ApiChatClient();
 
         ChatClient client = new ToFileChatClient(chatFileOperations);
-        MainFrame window = new MainFrame(800, 600, client);
+        MainFrame window = new MainFrame(800, 600, chatClient);
 
     }
 
