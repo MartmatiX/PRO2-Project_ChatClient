@@ -23,77 +23,88 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ApiChatClient implements ChatClient {
-
     private String loggedUser;
     private List<String> loggedUsers;
     private List<Message> messages;
-    private final List<ActionListener> listeners = new ArrayList<>();
+    private List<ActionListener> listeners = new ArrayList<>();
 
     private final String BASE_URL = "http://fimuhkpro22021.aspifyhost.cz/";
     private String token;
-    private final Gson gson;
+    private Gson gson;
 
     public ApiChatClient() {
         this.loggedUsers = new ArrayList<>();
         this.messages = new ArrayList<>();
 
-        gson = new GsonBuilder().setPrettyPrinting().registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer()).registerTypeAdapter(LocalDateTime.class, new LocalDateTimeDeserializer()).create();
+        gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .registerTypeAdapter(
+                        LocalDateTime.class,
+                        new LocalDateTimeSerializer())
+                .registerTypeAdapter(
+                        LocalDateTime.class,
+                        new LocalDateTimeDeserializer())
+                .create();
 
-        Runnable refreshData = () -> {
+        Runnable refreshData = ()-> {
             Thread.currentThread().setName("refreshData");
-
-            try {
-                if (isAuthenticated()) {
+            try{
+                if (isAuthenticated()){
                     refreshLoggedUsers();
                     refreshMessages();
                 }
                 TimeUnit.SECONDS.sleep(1);
-            } catch (Exception e) {
+            }catch(Exception e){
                 e.printStackTrace();
             }
         };
-
         Thread refreshDataThread = new Thread(refreshData);
         refreshDataThread.start();
     }
 
     @Override
     public void sendMessage(String text) {
-        try {
+        try{
             SendMessageRequest msgRequest = new SendMessageRequest(token, text);
 
             String url = BASE_URL + "/api/Chat/SendMessage";
             HttpPost post = new HttpPost(url);
-            StringEntity body = new StringEntity(gson.toJson(msgRequest), "utf-8");
+            StringEntity body = new StringEntity(
+                    gson.toJson(msgRequest),
+                    "utf-8"
+            );
             body.setContentType("application/json");
             post.setEntity(body);
 
             CloseableHttpClient httpClient = HttpClients.createDefault();
             CloseableHttpResponse response = httpClient.execute(post);
 
-            if (response.getStatusLine().getStatusCode() == 204) {
-                System.out.println("Message sent\n");
+            if(response.getStatusLine().getStatusCode() == 204){
+                System.out.println("message sent");
                 refreshMessages();
             }
-        } catch (Exception e) {
+        }catch (Exception e){
             e.printStackTrace();
         }
     }
 
     @Override
     public void login(String userName) {
-        try {
+        try{
             String url = BASE_URL + "/api/Chat/Login";
             HttpPost post = new HttpPost(url);
-            StringEntity body = new StringEntity("\"" + userName + "\"", "utf-8");
+            StringEntity body = new StringEntity(
+                    "\""+userName+"\"",
+                    "utf-8"
+            );
             body.setContentType("application/json");
             post.setEntity(body);
 
             CloseableHttpClient httpClient = HttpClients.createDefault();
             CloseableHttpResponse response = httpClient.execute(post);
 
-            if (response.getStatusLine().getStatusCode() == 200) {
-                System.out.println("User logged in\n");
+            if(response.getStatusLine().getStatusCode() == 200){
+                System.out.println("user logged in");
 
                 token = EntityUtils.toString(response.getEntity());
                 token = token.replace("\"", "").trim();
@@ -101,31 +112,42 @@ public class ApiChatClient implements ChatClient {
                 loggedUser = userName;
                 refreshLoggedUsers();
             }
-        } catch (Exception e) {
+        }catch (Exception e){
             e.printStackTrace();
         }
+
+        /*
+        loggedUser = userName;
+        loggedUsers.add(userName);
+        addSystemMessage(Message.USER_LOGGED_IN, loggedUser);
+        System.out.println("new logged in - " + userName);
+        raiseEventLoggedUsersChanged();
+        */
     }
 
     @Override
     public void logout() {
-        try {
+        try{
             String url = BASE_URL + "/api/Chat/Logout";
             HttpPost post = new HttpPost(url);
-            StringEntity body = new StringEntity("\"" + token + "\"", "utf-8");
+            StringEntity body = new StringEntity(
+                    "\""+token+"\"",
+                    "utf-8"
+            );
             body.setContentType("application/json");
             post.setEntity(body);
 
             CloseableHttpClient httpClient = HttpClients.createDefault();
             CloseableHttpResponse response = httpClient.execute(post);
 
-            if (response.getStatusLine().getStatusCode() == 204) {
-                System.out.println("User logged out\n");
+            if(response.getStatusLine().getStatusCode() == 204){
+                System.out.println("user logged out");
                 token = null;
                 loggedUser = null;
                 loggedUsers.clear();
                 raiseEventLoggedUsersChanged();
             }
-        } catch (Exception e) {
+        }catch (Exception e){
             e.printStackTrace();
         }
     }
@@ -151,43 +173,45 @@ public class ApiChatClient implements ChatClient {
     }
 
     private void raiseEventLoggedUsersChanged() {
-        for (ActionListener aL : listeners) {
-            aL.actionPerformed(new ActionEvent(this, 1, "usersChanged"));
+        for (ActionListener listener : listeners) {
+            listener.actionPerformed(new ActionEvent(this, 1, "usersChanger"));
         }
     }
 
-    private void raiseEventMessageChanged() {
-        for (ActionListener aL : listeners) {
-            aL.actionPerformed(new ActionEvent(this, 2, "messageChanged"));
+    private void raiseEventMessagesChanged() {
+        for (ActionListener listener : listeners) {
+            listener.actionPerformed(new ActionEvent(this, 2, "messagesChanged"));
         }
     }
 
     public void addSystemMessage(int type, String userName) {
         messages.add(new Message(type, userName));
-        raiseEventMessageChanged();
+        raiseEventMessagesChanged();
     }
 
-    private void refreshLoggedUsers() {
-        try {
+    private void refreshLoggedUsers(){
+        try{
             String url = BASE_URL + "/api/Chat/GetLoggedUsers";
             HttpGet get = new HttpGet(url);
 
             CloseableHttpClient httpClient = HttpClients.createDefault();
             CloseableHttpResponse response = httpClient.execute(get);
 
-            if (response.getStatusLine().getStatusCode() == 200) {
+            if (response.getStatusLine().getStatusCode() == 200){
                 String jsonResult = EntityUtils.toString(response.getEntity());
-                loggedUsers = gson.fromJson(jsonResult, new TypeToken<ArrayList<String>>() {
-                }.getType());
+                loggedUsers = gson.fromJson(
+                        jsonResult,
+                        new TypeToken<ArrayList<String>>(){}.getType()
+                );
                 raiseEventLoggedUsersChanged();
             }
-        } catch (Exception e) {
+        }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    private void refreshMessages() {
-        try {
+    private void refreshMessages(){
+        try{
             String url = BASE_URL + "/api/Chat/GetMessages";
             HttpGet get = new HttpGet(url);
 
@@ -196,12 +220,14 @@ public class ApiChatClient implements ChatClient {
 
             if (response.getStatusLine().getStatusCode() == 200){
                 String jsonResult = EntityUtils.toString(response.getEntity());
-                messages = gson.fromJson(jsonResult, new TypeToken<ArrayList<Message>>(){}.getType());
-                raiseEventMessageChanged();
+                messages = gson.fromJson(
+                        jsonResult,
+                        new TypeToken<ArrayList<Message>>(){}.getType()
+                );
+                raiseEventMessagesChanged();
             }
-        } catch (Exception e) {
+        }catch (Exception e){
             e.printStackTrace();
         }
     }
-
 }
