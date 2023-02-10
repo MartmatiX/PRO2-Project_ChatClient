@@ -1,5 +1,5 @@
 # PRO2-Project_ChatClient
-This project was created during PRO2 classess on UHK FIM.
+This project was created during PRO2 classes on UHK FIM.
 
 # For other students
  * This project was made on classes with Mr. Langer
